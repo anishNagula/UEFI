@@ -1,0 +1,27 @@
+#include "boot.h"
+
+static CHAR16 message[] =
+    u"Welcome to Snoopy!\r\n"
+    u"UEFI successfully transferred control to C.\r\n";
+
+EFI_STATUS efi_main(
+    EFI_HANDLE ImageHandle,
+    EFI_SYSTEM_TABLE *SystemTable
+) {
+    (void)ImageHandle;
+
+    if (SystemTable == 0) {
+        return 1;
+    }
+
+    if (SystemTable->ConOut == 0) {
+        return 1;
+    }
+
+    SystemTable->ConOut->OutputString(
+        SystemTable->ConOut,
+        message
+    );
+
+    return EFI_SUCCESS;
+}

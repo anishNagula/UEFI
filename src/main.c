@@ -1,18 +1,19 @@
-#include "uefi.h"
+#include <efi.h>
+#include <efilib.h>
 
-EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *st) {
-    (void)image;
+EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
+{
+    InitializeLib(ImageHandle, SystemTable);
 
-    st->ConOut->OutputString(
-        st->ConOut,
-        L"\r\n"
-        L"===============================================\r\n"
-        L"        Snoopy AArch64 UEFI Loader             \r\n"
-        L"===============================================\r\n"
-        L"\r\n"
-        L"UEFI successfully handed control to Snoopy!\r\n"
-        L"\r\n"
-    );
+    Print(L"\r\n");
+    Print(L"===============================================\r\n");
+    Print(L"        Snoopy AArch64 UEFI Loader             \r\n");
+    Print(L"===============================================\r\n");
+    Print(L"\r\n");
+
+    Print(L"GNU-EFI initialized successfully!\r\n");
+    Print(L"Using the real UEFI headers and library.\r\n");
+    Print(L"\r\n");
 
     while (1) {
         __asm__ volatile("wfe");
