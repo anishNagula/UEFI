@@ -1,4 +1,4 @@
-TARGET = BOOTAA64.EFI
+TARGET = build/BOOTAA64.EFI
 
 CC = /opt/homebrew/opt/llvm/bin/clang
 LD = /opt/homebrew/bin/lld-link
@@ -23,15 +23,22 @@ LDFLAGS = \
 
 all: $(TARGET)
 
-main.o: main.c uefi.h
-	$(CC) $(CFLAGS) -c main.c -o main.o
+build:
+	mkdir -p build
 
-$(TARGET): main.o
-	$(LD) $(LDFLAGS) main.o
+build/main.o: src/main.c src/uefi.h | build
+	$(CC) $(CFLAGS) -c src/main.c -o build/main.o
+
+$(TARGET): build/main.o
+	$(LD) $(LDFLAGS) build/main.o
 
 install: $(TARGET)
 	mkdir -p esp/EFI/BOOT
 	cp $(TARGET) esp/EFI/BOOT/BOOTAA64.EFI
 
+run: install
+	./run.sh
+
 clean:
-	rm -f main.o $(TARGET)
+	rm -rf build
+	rm -f esp/EFI/BOOT/BOOTAA64.EFI
