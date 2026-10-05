@@ -74,7 +74,7 @@ $(TARGET): build/snoopy.so
 		-O binary \
 		$< $@
 
-build/kernel.o: src/kernel.c | build
+build/kernel.o: src/kernel.c src/bootinfo.h | build
 	$(CC) \
 		-ffreestanding \
 		-fno-stack-protector \
@@ -82,10 +82,36 @@ build/kernel.o: src/kernel.c | build
 		-O2 \
 		-c $< -o $@
 
-build/kernel.elf: build/kernel.o src/kernel.ld
+build/kernel_entry.o: src/kernel_entry.S | build
+	$(CC) \
+		-c $< \
+		-o $@
+
+build/vectors.o: src/vectors.S | build
+	$(CC) \
+		-c $< \
+		-o $@
+
+build/exception.o: src/exception.c | build
+	$(CC) \
+		-ffreestanding \
+		-fno-stack-protector \
+		-fno-builtin \
+		-O2 \
+		-c $< -o $@
+
+build/kernel.elf: \
+	build/kernel.o \
+	build/kernel_entry.o \
+	build/vectors.o \
+	build/exception.o \
+	src/kernel.ld
 	/opt/homebrew/bin/aarch64-elf-ld \
 		-T src/kernel.ld \
 		-o $@ \
+		build/kernel_entry.o \
+		build/vectors.o \
+		build/exception.o \
 		build/kernel.o
 
 install: all
