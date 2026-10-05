@@ -98,6 +98,17 @@ build/physical.o: src/physical.c src/physical.h src/memory_map.h src/bootinfo.h 
 		-O2 \
 		-c $< -o $@
 
+build/mmu.o: src/mmu.c src/mmu.h src/physical.h | build
+	$(CC) \
+		-ffreestanding \
+		-fno-stack-protector \
+		-fno-builtin \
+		-O2 \
+		-c $< -o $@
+
+build/mmu_asm.o: src/mmu.S | build
+	$(CC) -c $< -o $@
+
 build/kernel_entry.o: src/kernel_entry.S | build
 	$(CC) -c $< -o $@
 
@@ -116,6 +127,8 @@ build/kernel.elf: \
 	build/kernel.o \
 	build/memory_map.o \
 	build/physical.o \
+	build/mmu.o \
+	build/mmu_asm.o \
 	build/kernel_entry.o \
 	build/vectors.o \
 	build/exception.o \
@@ -129,6 +142,8 @@ build/kernel.elf: \
 		build/exception.o \
 		build/memory_map.o \
 		build/physical.o \
+		build/mmu.o \
+		build/mmu_asm.o \
 		build/kernel.o
 
 install: all

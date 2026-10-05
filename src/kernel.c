@@ -3,6 +3,7 @@
 #include "bootinfo.h"
 #include "memory_map.h"
 #include "physical.h"
+#include "mmu.h"
 
 void kernel_main(BootInfo *boot_info)
 {
@@ -25,6 +26,11 @@ void kernel_main(BootInfo *boot_info)
 
     physical_free_page(page1);
     physical_free_page(page2);
+
+    mmu_init(
+        boot_info->kernel_base,
+        boot_info->kernel_size
+    );
 
     while (1)
     {
