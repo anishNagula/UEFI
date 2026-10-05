@@ -1,115 +1,30 @@
 #include <stdint.h>
 
 #include "bootinfo.h"
-
-#define UART_BASE 0x09000000UL
-
-static volatile uint32_t *const UART =
-    (volatile uint32_t *)UART_BASE;
-
-
-static void uart_putc(char c)
-{
-    *UART = (uint32_t)c;
-}
-
-
-static void uart_puts(const char *s)
-{
-    while (*s)
-    {
-        uart_putc(*s++);
-    }
-}
-
-
-static void uart_hex(uint64_t value)
-{
-    const char *digits =
-        "0123456789ABCDEF";
-
-    uart_puts("0x");
-
-    for (int i = 15; i >= 0; i--)
-    {
-        uart_putc(
-            digits[
-                (value >> (i * 4)) & 0xF
-            ]
-        );
-    }
-}
-
+#include "memory_map.h"
+#include "physical.h"
 
 void kernel_main(BootInfo *boot_info)
 {
-    uart_puts("\r\n");
-    uart_puts("================================\r\n");
-    uart_puts("       SNOOPY KERNEL ONLINE      \r\n");
-    uart_puts("================================\r\n");
+    memory_map_init(boot_info);
+    physical_memory_init(boot_info);
 
-    uart_puts(
-        "Kernel stack initialized.\r\n"
-    );
+    /*
+     * Basic physical allocator smoke test.
+     */
+    uint64_t page1 = physical_alloc_page();
+    uint64_t page2 = physical_alloc_page();
 
-    uart_puts(
-        "Kernel received BootInfo.\r\n"
-    );
+    if (page1 == 0 || page2 == 0)
+    {
+        while (1)
+        {
+            __asm__ volatile("wfe");
+        }
+    }
 
-    uart_puts(
-        "Memory map address: "
-    );
-
-    uart_hex(
-        boot_info->memory_map
-    );
-
-    uart_puts("\r\n");
-
-    uart_puts(
-        "Memory map size: "
-    );
-
-    uart_hex(
-        boot_info->memory_map_size
-    );
-
-    uart_puts("\r\n");
-
-    uart_puts(
-        "Memory descriptor size: "
-    );
-
-    uart_hex(
-        boot_info->memory_descriptor_size
-    );
-
-    uart_puts("\r\n");
-
-    uart_puts(
-        "Kernel base: "
-    );
-
-    uart_hex(
-        boot_info->kernel_base
-    );
-
-    uart_puts("\r\n");
-
-    uart_puts(
-        "Kernel size: "
-    );
-
-    uart_hex(
-        boot_info->kernel_size
-    );
-
-    uart_puts("\r\n");
-
-    uart_puts(
-        "Boot information handoff successful.\r\n"
-    );
-
+    physical_free_page(page1);
+    physical_free_page(page2);
 
     while (1)
     {

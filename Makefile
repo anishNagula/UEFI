@@ -74,7 +74,23 @@ $(TARGET): build/snoopy.so
 		-O binary \
 		$< $@
 
-build/kernel.o: src/kernel.c src/bootinfo.h | build
+build/kernel.o: src/kernel.c src/bootinfo.h src/memory_map.h src/physical.h | build
+	$(CC) \
+		-ffreestanding \
+		-fno-stack-protector \
+		-fno-builtin \
+		-O2 \
+		-c $< -o $@
+
+build/memory_map.o: src/memory_map.c src/memory_map.h src/bootinfo.h | build
+	$(CC) \
+		-ffreestanding \
+		-fno-stack-protector \
+		-fno-builtin \
+		-O2 \
+		-c $< -o $@
+
+build/physical.o: src/physical.c src/physical.h src/memory_map.h src/bootinfo.h | build
 	$(CC) \
 		-ffreestanding \
 		-fno-stack-protector \
@@ -83,14 +99,10 @@ build/kernel.o: src/kernel.c src/bootinfo.h | build
 		-c $< -o $@
 
 build/kernel_entry.o: src/kernel_entry.S | build
-	$(CC) \
-		-c $< \
-		-o $@
+	$(CC) -c $< -o $@
 
 build/vectors.o: src/vectors.S | build
-	$(CC) \
-		-c $< \
-		-o $@
+	$(CC) -c $< -o $@
 
 build/exception.o: src/exception.c | build
 	$(CC) \
@@ -102,16 +114,21 @@ build/exception.o: src/exception.c | build
 
 build/kernel.elf: \
 	build/kernel.o \
+	build/memory_map.o \
+	build/physical.o \
 	build/kernel_entry.o \
 	build/vectors.o \
 	build/exception.o \
 	src/kernel.ld
+
 	/opt/homebrew/bin/aarch64-elf-ld \
 		-T src/kernel.ld \
 		-o $@ \
 		build/kernel_entry.o \
 		build/vectors.o \
 		build/exception.o \
+		build/memory_map.o \
+		build/physical.o \
 		build/kernel.o
 
 install: all
