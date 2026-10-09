@@ -58,7 +58,7 @@ static void configure_mair(void) {
      * Inner/Outer Write-back cacheable.
      */
 
-    uint64_t mair = 0xFFULL;
+     uint64_t mair = 0x00000000000000FFULL;
 
     __asm__ volatile(
         "msr mair_el1, %0"

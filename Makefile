@@ -123,6 +123,14 @@ build/exception.o: src/exception.c | build
 		-O2 \
 		-c $< -o $@
 
+build/page_table.o: src/page_table.c src/page_table.h src/physical.h | build
+	$(CC) \
+		-ffreestanding \
+		-fno-stack-protector \
+		-fno-builtin \
+		-O2 \
+		-c $< -o $@
+
 build/kernel.elf: \
 	build/kernel.o \
 	build/memory_map.o \
@@ -132,6 +140,7 @@ build/kernel.elf: \
 	build/kernel_entry.o \
 	build/vectors.o \
 	build/exception.o \
+	build/page_table.o \
 	src/kernel.ld
 
 	/opt/homebrew/bin/aarch64-elf-ld \
@@ -144,6 +153,7 @@ build/kernel.elf: \
 		build/physical.o \
 		build/mmu.o \
 		build/mmu_asm.o \
+		build/page_table.o \
 		build/kernel.o
 
 install: all
